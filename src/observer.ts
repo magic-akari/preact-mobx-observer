@@ -23,7 +23,7 @@ export function observer(comp: any) {
             (this.constructor as typeof Component).displayName ||
             this.constructor.name;
         this[mobxReaction] = new Reaction(`${compName}.render()`, () =>
-            this.forceUpdate(),
+            this.setState({}),
         );
     });
 
