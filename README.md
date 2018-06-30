@@ -3,7 +3,7 @@ Simple observer decorator for using Preact components with MobX
 
 ## Install
 ```
-yarn add preact-mobx
+yarn add preact-mobx-observer
 ```
 
 ## Usage
@@ -11,7 +11,7 @@ yarn add preact-mobx
 ```tsx
 import { h, Component } from 'preact';
 import { observable, action, useStrict } from 'mobx';
-import { observer } from 'preact-mobx';
+import { observer } from 'preact-mobx-observer';
 
 useStrict(true);
 
