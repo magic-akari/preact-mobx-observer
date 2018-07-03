@@ -1,14 +1,11 @@
 {
-    "compilerOptions": {
-        "module": "es2015",
-        "moduleResolution": "node",
-        "target": "es5",
-        "noImplicitAny": false,
-        "sourceMap": true,
-        "declaration": true,
-        "outDir": "dist",
-        "experimentalDecorators": true,
-        "skipLibCheck": true,
-        "lib": ["dom", "es2015", "es2016.array.include"]
-    }
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2015",
+    "lib": ["dom", "es2015"],
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node"
+  }
 }
