@@ -1,1 +1,0 @@
-export { observer } from "./observer";
