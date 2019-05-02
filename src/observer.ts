@@ -1,48 +1,40 @@
 import { Component } from "preact";
 import { Reaction } from "mobx";
 
-function augment(object: object, key: string, func: Function) {
-  const origMethod = object[key];
-  object[key] = function() {
-    (func as any).apply(this, arguments);
-    if (origMethod) {
-      return (origMethod as any).apply(this, arguments);
-    }
-  } as any;
-}
+const augment = <O extends any, K extends keyof O>(object: O, key: K, func: Function) => {
+    const origMethod = object[key];
+    object[key] = function(this: O) {
+        func.apply(this, arguments);
+        if (origMethod) {
+            return (origMethod as Function).apply(this, arguments);
+        }
+    } as O[K];
+};
 
 const mobxReaction = Symbol("mobxReaction");
 
-export function observer(comp: any) {
-  const componentClass = <typeof Component>comp;
+type CompWithSymbol = Component & { [mobxReaction]?: Reaction | null };
 
-  augment(componentClass.prototype, "componentWillMount", function(
-    this: Component<any, any>,
-  ) {
-    const compName =
-      (this.constructor as typeof Component).displayName ||
-      this.constructor.name;
-    this[mobxReaction] = new Reaction(`${compName}.render()`, () =>
-      this.setState({}),
-    );
-  });
+export const observer = (comp: any) => {
+    const componentClass = comp as typeof Component;
 
-  augment(componentClass.prototype, "componentWillUnmount", function(
-    this: Component<any, any>,
-  ) {
-    this[mobxReaction].dispose();
-    this[mobxReaction] = null;
-  });
-
-  const origRender = componentClass.prototype.render;
-  componentClass.prototype.render = function(this: Component<any, any>): any {
-    const args = arguments;
-
-    let renderResult: any;
-    this[mobxReaction].track(() => {
-      renderResult = origRender.apply(this, args);
+    augment(componentClass.prototype, "componentWillMount", function(this: CompWithSymbol) {
+        const compName = (this.constructor as typeof Component).displayName || this.constructor.name;
+        this[mobxReaction] = new Reaction(`${compName}.render()`, () => this.setState({}));
     });
 
-    return renderResult;
-  };
-}
+    augment(componentClass.prototype, "componentWillUnmount", function(this: CompWithSymbol) {
+        this[mobxReaction]!.dispose();
+        this[mobxReaction] = null;
+    });
+
+    const origRender = componentClass.prototype.render;
+    componentClass.prototype.render = function(this: CompWithSymbol, props?, state?, context?) {
+        let renderResult: ReturnType<typeof origRender>;
+        this[mobxReaction]!.track(() => {
+            renderResult = origRender.call(this, props, state, context);
+        });
+
+        return renderResult!;
+    };
+};
